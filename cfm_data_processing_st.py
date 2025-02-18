@@ -17,7 +17,7 @@ from io import BytesIO
 st.header("CFM data processing")
 
 
-csv_file = st.file_uploader("Import IPSE data (.txt-export file)", key="upload_ipse")
+csv_file = st.file_uploader("Import raw data (.csv-export file)", key="upload_ipse")
 
 
 # csv_file = "CFM_data_2025-02-17_17-20.csv"
