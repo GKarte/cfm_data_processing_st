@@ -14,16 +14,24 @@ from io import BytesIO
 
 
 
+
+
+
+
+
 st.header("CFM data processing")
 
 
 csv_file = st.file_uploader("Import raw data (.csv-export file)", key="upload_ipse")
 
 
+
+
 # csv_file = "CFM_data_2025-02-17_17-20.csv"
 
 if csv_file is not None:
-
+    
+    
     df_raw = pd.read_csv(csv_file, sep=",", header=0, index_col=0, engine='python') # read csv
     calib_corr_df = df_raw.loc["calibration correction mbar"]
     sensor_heights_df = df_raw.loc["sensor height"] # store height data
@@ -57,18 +65,24 @@ if csv_file is not None:
     df_out = pd.merge(df_out, p_mean_not_corr, left_index=True, right_index=True) # add calib corr
     df_out.columns = ["h/m", "p_mean/mbar", "p_std/mbar", "p_mean_not_corr/mbar"]
     
+
+    df_out = df_out.sort_index()
+    
     
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine = 'xlsxwriter')
     df_out.to_excel(writer, sheet_name="data", float_format="%.5f", startrow=0, index=True)
     writer.close()
     
-    
-    
     download = st.download_button(
         label="Export result",
         data=output.getvalue(),
         file_name= f'mean_{csv_file.name}.xlsx'
         )
-    
+        
+        
+        
     st.dataframe(df_out)
+        
+        
+        
