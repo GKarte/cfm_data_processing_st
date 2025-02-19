@@ -87,7 +87,7 @@ def calc_Vdots_out(df_in):
     gm_zl_signal = np.array(list(df_out["gm_ZL"])) # signal
     V_dots_GR, V_dot_GR_mean, V_dot_GR_std, n_V_dot_GR, V_dot_GR_glob = gm_signal_to_Vdot(time_array, gm_zl_signal) 
     # stats dataframe
-    df_Vdot_stats = pd.DataFrame(index =['Vdot_mean / Nm^3/h', 'Vdot_std / Nm^3/h', 'n_V_dot / -', 'V_dot_glob / Nm^3/h'])
+    df_Vdot_stats = pd.DataFrame(index =['Vdot_mean / m^3/h', 'Vdot_std / m^3/h', 'n_V_dot / -', 'V_dot_glob / m^3/h'])
     df_Vdot_stats["CR"] = [V_dot_CR_mean, V_dot_CR_std, n_V_dot_CR, V_dot_CR_glob]
     df_Vdot_stats["GR"] = [V_dot_GR_mean, V_dot_GR_std, n_V_dot_GR, V_dot_GR_glob]
     # all Vdots dataframe
@@ -140,7 +140,7 @@ if csv_file_raspi is not None:
     # calc V_dot at cyclone outlets based on >>Gasuhr<< pulses
     df_data_raspi, df_Vdot_stats, df_Vdots = calc_Vdots_out(df_data_raspi)
 
-    # create excel output
+    # create excel output simple (RaPi)
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine = 'xlsxwriter')
     df_p.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
@@ -151,7 +151,7 @@ if csv_file_raspi is not None:
     download = st.download_button(
         label="Export result (RaPi only)",
         data=output.getvalue(),
-        file_name= f'cfm_analysis_{csv_file_raspi.name}.xlsx'
+        file_name= f'cfm_analysis_{csv_file_raspi.name.split(".")[0]}.xlsx'
         )       
         
     st.dataframe(df_p)
@@ -194,7 +194,7 @@ if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_g
     df_GM_stats["CR"] = GM_CR_stats
     df_GM_stats["GR"] = GM_GR_stats
     
-    # create excel output
+    # create excel output extended
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine = 'xlsxwriter')
     df_p.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
@@ -208,7 +208,7 @@ if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_g
     download = st.download_button(
         label="Export result (extended)",
         data=output.getvalue(),
-        file_name= f'cfm_analysis_extended_{csv_file_raspi.name}.xlsx'
+        file_name= f'cfm_analysis_extended_{csv_file_raspi.name.split(".")[0]}.xlsx'
         )       
         
     st.dataframe(df_GM_stats)
