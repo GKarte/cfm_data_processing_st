@@ -201,10 +201,10 @@ if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_g
     df_p.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
     df_Vdot_stats.to_excel(writer, sheet_name="Vdot_stats", float_format="%.5f", startrow=0, index=True)
     df_Vdots.to_excel(writer, sheet_name="Vdot_raw", float_format="%.5f", startrow=0, index=True)
-    df_GM_stats.to_excel(writer, sheet_name="CO2_stats", float_format="%.7f", startrow=0, index=True)
-    df_GM_CR.to_excel(writer, sheet_name="CO2_CR", float_format="%.7f", startrow=0, index=True)
-    df_GM_GR.to_excel(writer, sheet_name="CO2_GR", float_format="%.7f", startrow=0, index=True)
-    df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.7f", startrow=0, index=True)
+    df_GM_stats.to_excel(writer, sheet_name="CO2_stats", float_format="%.8f", startrow=0, index=True)
+    df_GM_CR.to_excel(writer, sheet_name="CO2_CR", float_format="%.8f", startrow=0, index=True)
+    df_GM_GR.to_excel(writer, sheet_name="CO2_GR", float_format="%.8f", startrow=0, index=True)
+    df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.5f", startrow=0, index=True)
     writer.close()
     
     download = st.download_button(
