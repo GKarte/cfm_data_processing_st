@@ -130,7 +130,7 @@ txt_file_gasMeas_CR = st.file_uploader("Import raw data from gas analyser (CR)",
 txt_file_gasMeas_GR = st.file_uploader("Import raw data from gas analyser (GR)", key="upload_gasAnal_GR")
 timestamps_manual = st.checkbox("Define end - and start-time manually (for gas analyser data extraction)", value=False)
 
-
+# only csv from Raspi
 if csv_file_raspi is not None:
     
     
@@ -157,7 +157,8 @@ if csv_file_raspi is not None:
         
     st.dataframe(df_p)
     st.dataframe(df_Vdot_stats)
-    
+
+# csv from Raspi + CR-GasAnalyzer + GR-GasAnalyzer      
 if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_gasMeas_GR is not None:
     
     # read in gas analyser data from CR
@@ -203,6 +204,55 @@ if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_g
     df_Vdots.to_excel(writer, sheet_name="Vdot_raw", float_format="%.5f", startrow=0, index=True)
     df_GM_stats.to_excel(writer, sheet_name="CO2_stats", float_format="%.8f", startrow=0, index=True)
     df_GM_CR.to_excel(writer, sheet_name="CO2_CR", float_format="%.8f", startrow=0, index=True)
+    df_GM_GR.to_excel(writer, sheet_name="CO2_GR", float_format="%.8f", startrow=0, index=True)
+    df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.5f", startrow=0, index=True)
+    writer.close()
+    
+    download = st.download_button(
+        label="Export result (extended)",
+        data=output.getvalue(),
+        file_name= f'cfm_analysis_extended_{csv_file_raspi.name.split(".")[0]}.xlsx'
+        )       
+        
+    st.dataframe(df_GM_stats)
+
+
+# only csv from Raspi + GR-GasAnalyzer     
+if csv_file_raspi is not None and txt_file_gasMeas_CR is None and txt_file_gasMeas_GR is not None:
+    
+
+    # read in gas analyser data from GR
+    df_GM_GR_raw = pd.read_csv(txt_file_gasMeas_GR, sep="\t", header=0, index_col=None, engine='python') # read txt
+    df_GM_GR_raw = df_GM_GR_raw[["Time", "Ch2:Conce:ppm"]]
+    df_GM_GR_raw.columns = ["t", "CO2"]
+    df_GM_GR_raw["CO2"] = df_GM_GR_raw["CO2"]/(10**6)
+    
+    if timestamps_manual is True:
+        t_start_str = st.text_input("start-time", value=df_GM_GR_raw.iloc[20]["t"])
+        t_end_str = st.text_input("end-time", value=df_GM_GR_raw.iloc[-20]["t"])
+        t_start_tot = sum([a*b for a,b in zip([3600,60,1], map(float,t_start_str.split(':')))])
+        t_end_tot = sum([a*b for a,b in zip([3600,60,1], map(float,t_end_str.split(':')))])
+    else:
+        t_start_tot = df_data_raspi.iloc[0]["t_tot"]
+        t_end_tot = df_data_raspi.iloc[-1]["t_tot"]
+        
+    # extract time window of data series
+    df_GM_GR = extract_gasAnalyser_section(df_GM_GR_raw, t_start_tot, t_end_tot)
+    print(df_GM_GR)
+
+    # gas analyser stats
+    GM_GR_stats = calc_gasAnalyser_stats(df_GM_GR)
+    print(GM_GR_stats)
+    df_GM_stats = pd.DataFrame(index =['CO2_mean / mol/mol', 'CO2_std / mol/mol', 'CO2_min / mol/mol', 'CO2_max / mol/mol'])
+    df_GM_stats["GR"] = GM_GR_stats
+    
+    # create excel output extended
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine = 'xlsxwriter')
+    df_p.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
+    df_Vdot_stats.to_excel(writer, sheet_name="Vdot_stats", float_format="%.5f", startrow=0, index=True)
+    df_Vdots.to_excel(writer, sheet_name="Vdot_raw", float_format="%.5f", startrow=0, index=True)
+    df_GM_stats.to_excel(writer, sheet_name="CO2_stats", float_format="%.8f", startrow=0, index=True)
     df_GM_GR.to_excel(writer, sheet_name="CO2_GR", float_format="%.8f", startrow=0, index=True)
     df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.5f", startrow=0, index=True)
     writer.close()
