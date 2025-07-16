@@ -166,11 +166,13 @@ if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_g
     df_GM_CR_raw = df_GM_CR_raw[["Time", "Ch1:Conce:Vol%"]]
     df_GM_CR_raw.columns = ["t", "CO2"]
     df_GM_CR_raw["CO2"] = df_GM_CR_raw["CO2"]/100
+    df_GM_CR_raw["CO2"] = df_GM_CR_raw["CO2"].round(9)
     # read in gas analyser data from GR
     df_GM_GR_raw = pd.read_csv(txt_file_gasMeas_GR, sep="\t", header=0, index_col=None, engine='python') # read txt
     df_GM_GR_raw = df_GM_GR_raw[["Time", "Ch2:Conce:ppm"]]
     df_GM_GR_raw.columns = ["t", "CO2"]
     df_GM_GR_raw["CO2"] = df_GM_GR_raw["CO2"]/(10**6)
+    df_GM_GR_raw["CO2"] = df_GM_GR_raw["CO2"].round(9)
     
     if timestamps_manual is True:
         t_start_str = st.text_input("start-time", value=df_GM_GR_raw.iloc[20]["t"])
@@ -202,9 +204,9 @@ if csv_file_raspi is not None and txt_file_gasMeas_CR is not None and txt_file_g
     df_p.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
     df_Vdot_stats.to_excel(writer, sheet_name="Vdot_stats", float_format="%.5f", startrow=0, index=True)
     df_Vdots.to_excel(writer, sheet_name="Vdot_raw", float_format="%.5f", startrow=0, index=True)
-    df_GM_stats.to_excel(writer, sheet_name="CO2_stats", float_format="%.8f", startrow=0, index=True)
-    df_GM_CR.to_excel(writer, sheet_name="CO2_CR", float_format="%.8f", startrow=0, index=True)
-    df_GM_GR.to_excel(writer, sheet_name="CO2_GR", float_format="%.8f", startrow=0, index=True)
+    df_GM_stats.to_excel(writer, sheet_name="CO2_stats", float_format="%.9f", startrow=0, index=True)
+    df_GM_CR.to_excel(writer, sheet_name="CO2_CR", float_format="%.9f", startrow=0, index=True)
+    df_GM_GR.to_excel(writer, sheet_name="CO2_GR", float_format="%.9f", startrow=0, index=True)
     df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.5f", startrow=0, index=True)
     writer.close()
     
