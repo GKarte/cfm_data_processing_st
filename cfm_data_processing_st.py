@@ -20,7 +20,8 @@ def calc_mean_pressures(csv_file):
     calib_corr_df = df_raw.loc["calibration correction mbar"]
     sensor_heights_df = df_raw.loc["sensor height"] # store height data
     df_data_raspi = df_raw.drop(labels=["sensor number","sensor range","sensor height","calibration correction mbar"], axis=0) # drop non-pressure rows
-
+    
+    
     # calculate mean values of pressure values and convert to df
     p_mean = df_data_raspi.mean().to_frame() # mean values of measured an corrected (auto calib) values
     p_std = df_data_raspi.std().to_frame() # mean values of measured an corrected (auto calib) values
@@ -40,6 +41,20 @@ def calc_mean_pressures(csv_file):
     df_out = df_out.drop(labels=["index","sort1","sort2"], axis=1)
     
     return df_out, df_data_raspi
+
+def calc_add_numbers(df_in):
+    df_out = df_in
+    df_out.loc["dp_GF","p_mean/mbar"] = df_out.loc["GF1","p_mean/mbar"] - df_out.loc["GF6","p_mean/mbar"]
+    df_out.loc["dp_SEG","p_mean/mbar"] = df_out.loc["SEG1","p_mean/mbar"] - df_out.loc["SEG5","p_mean/mbar"]
+    df_out.loc["dp_CRbox","p_mean/mbar"] = df_out.loc["RIS1","p_mean/mbar"] - df_out.loc["RIS4","p_mean/mbar"]
+    df_out.loc["dp_CRriser","p_mean/mbar"] = df_out.loc["RIS1","p_mean/mbar"] - df_out.loc["RIS13","p_mean/mbar"]
+    df_out.loc["dp_LLS","p_mean/mbar"] = df_out.loc["CON_R2","p_mean/mbar"] - df_out.loc["CON_R3","p_mean/mbar"]
+    df_out.loc["dp_chute-GF","p_mean/mbar"] = df_out.loc["CON_L1","p_mean/mbar"] - df_out.loc["GF1","p_mean/mbar"]
+    df_out.loc["dp_chute-SEG","p_mean/mbar"] = df_out.loc["CON_L1","p_mean/mbar"] - df_out.loc["SEG2","p_mean/mbar"]
+    df_out.loc["m_dot_s_calc","p_mean/mbar"] = df_out.loc["dp1","p_mean/mbar"]*20.598 - 53.421
+    
+    
+    return df_out
 
 
 # def gm_signal_to_Vdot(time_array, signal_array):
@@ -128,11 +143,12 @@ if csv_files_raspi:
     for csv_file_raspi in csv_files_raspi:
         # 1) Calcul RaPi
         df_p, df_data_raspi = calc_mean_pressures(csv_file_raspi)
+        df_p_ext = calc_add_numbers(df_p)
         
         # create excel output simple (RaPi)
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine = 'xlsxwriter')
-        df_p.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
+        df_p_ext.to_excel(writer, sheet_name="p_mean", float_format="%.5f", startrow=0, index=True)
         df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.5f", startrow=0, index=True)
         writer.close()
         
