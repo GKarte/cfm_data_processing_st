@@ -145,7 +145,7 @@ for file in csv_files:
     dfs_out.append(df_p)
     
     
-    # # correction of GF19->GF20
+    # correction of GF19->GF20
     # p_h.loc["GF20"] = p_h.loc["GF19"]
     # p_h.loc["GF20"]["h"] = p_h.loc["GF19"]["h"] + 0.05
     # p_h.drop(labels=["GF19"], axis=0, inplace=True)
