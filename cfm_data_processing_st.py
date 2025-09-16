@@ -33,7 +33,7 @@ def calc_mean_pressures(csv_file):
     df_out.columns = ["h/m", "p_mean/mbar", "p_std/mbar", "p_mean_not_corr/mbar"]
     # sort according to name
     df_out["index"] = df_out.index
-    df_out = df_out.drop(["gm_ZR", "gm_ZL"])
+    df_out = df_out.drop(["gm1", "gm2"])
     df_out["sort1"] = df_out['index'].str.extract(r'([a-zA-Z]*)')
     df_out["sort2"] = df_out['index'].str.extract('(\d+)', expand=False).astype(int)
     df_out = df_out.sort_values(['sort1', 'sort2'], ascending=[True, True])
