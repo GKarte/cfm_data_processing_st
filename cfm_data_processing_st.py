@@ -236,3 +236,5 @@ if recap_rows:
         file_name="summary.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+    
+st.image(r'./calc_definitions.png', caption="Calculation of pressure drops and solid circulation")
