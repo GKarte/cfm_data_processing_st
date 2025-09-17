@@ -226,6 +226,9 @@ if recap_rows:
     df_recap = df_recap.transpose()
     df_recap.columns = df_recap.loc['filename']
     df_recap = df_recap.drop(['filename'])
+    df_recap["h/m"] = df_p["h/m"]
+    col = df_recap.pop("h/m")
+    df_recap.insert(0, col.name, col)
     
     recap_output = BytesIO()
     df_recap.to_excel(recap_output, index=True, header=True, sheet_name="summary")
