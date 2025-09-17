@@ -44,17 +44,21 @@ def calc_mean_pressures(csv_file):
 
 def calc_add_numbers(df_in):
     df_out = df_in
-    df_out.loc["dp_GF","p_mean/mbar"] = df_out.loc["GF1","p_mean/mbar"] - df_out.loc["GF6","p_mean/mbar"]
-    df_out.loc["dp_SEG","p_mean/mbar"] = df_out.loc["SEG1","p_mean/mbar"] - df_out.loc["SEG5","p_mean/mbar"]
-    df_out.loc["dp_CRbox","p_mean/mbar"] = df_out.loc["RIS1","p_mean/mbar"] - df_out.loc["RIS4","p_mean/mbar"]
-    df_out.loc["dp_CRriser","p_mean/mbar"] = df_out.loc["RIS1","p_mean/mbar"] - df_out.loc["RIS13","p_mean/mbar"]
-    df_out.loc["dp_LLS","p_mean/mbar"] = df_out.loc["CON_R2","p_mean/mbar"] - df_out.loc["CON_R3","p_mean/mbar"]
-    df_out.loc["dp_chute-GF","p_mean/mbar"] = df_out.loc["CON_L1","p_mean/mbar"] - df_out.loc["GF1","p_mean/mbar"]
-    df_out.loc["dp_chute-SEG","p_mean/mbar"] = df_out.loc["CON_L1","p_mean/mbar"] - df_out.loc["SEG2","p_mean/mbar"]
-    df_out.loc["m_dot_s_calc","p_mean/mbar"] = df_out.loc["dp1","p_mean/mbar"]*20.598 - 53.421
+    df_out.loc["dp_GF","p_mean/mbar"]           = df_out.loc["GF1","p_mean/mbar"]       - df_out.loc["GF6","p_mean/mbar"]
+    df_out.loc["dp_SEG","p_mean/mbar"]          = df_out.loc["SEG1","p_mean/mbar"]      - df_out.loc["SEG5","p_mean/mbar"]
+    df_out.loc["dp_CRbox","p_mean/mbar"]        = df_out.loc["RIS1","p_mean/mbar"]      - df_out.loc["RIS4","p_mean/mbar"]
+    df_out.loc["dp_CRriser","p_mean/mbar"]      = df_out.loc["RIS4","p_mean/mbar"]      - df_out.loc["RIS13","p_mean/mbar"]
+    df_out.loc["dp_LLS","p_mean/mbar"]          = df_out.loc["CON_R2","p_mean/mbar"]    - df_out.loc["CON_R3","p_mean/mbar"]
+    df_out.loc["dp_chute-GF","p_mean/mbar"]     = df_out.loc["CON_L1","p_mean/mbar"]    - df_out.loc["GF1","p_mean/mbar"]
+    df_out.loc["dp_chute-SEG","p_mean/mbar"]    = df_out.loc["CON_L1","p_mean/mbar"]    - df_out.loc["SEG2","p_mean/mbar"]
+    df_out.loc["dp_SEG_horiz","p_mean/mbar"]    = df_out.loc["CON_L1","p_mean/mbar"]    - df_out.loc["CON_R1","p_mean/mbar"]    
     
-    
+    df_out.loc["m_dot_s_calc","m_dot/kg/h"]     = df_out.loc["dp1","p_mean/mbar"]*20.598 - 53.421    
     return df_out
+
+# def create_summary_file(dfs, filenames):
+    
+    
 
 
 # def gm_signal_to_Vdot(time_array, signal_array):
@@ -135,15 +139,19 @@ csv_files_raspi = st.file_uploader("Import raw data (.csv) from RaPi", accept_mu
 
 
 
-
+# dfs_ext = []
+# csv_filenames = []
 extended_files = []
-recap_rows = None
+recap_rows = []
 
 if csv_files_raspi:
     for csv_file_raspi in csv_files_raspi:
+        csv_filename = csv_file_raspi.name.split(".")[0]
+        # csv_filenames.appen(csv_filename)
         # 1) Calcul RaPi
         df_p, df_data_raspi = calc_mean_pressures(csv_file_raspi)
         df_p_ext = calc_add_numbers(df_p)
+        # dfs_ext.append(df_p_ext)
         
         # create excel output simple (RaPi)
         output = BytesIO()
@@ -152,27 +160,12 @@ if csv_files_raspi:
         df_data_raspi.to_excel(writer, sheet_name="RasPi", float_format="%.5f", startrow=0, index=True)
         writer.close()
         
-        extended_files.append((f'cfm_analysis_extended_{csv_file_raspi.name.split(".")[0]}.xlsx', output.getvalue())) 
+        extended_files.append((f'cfm_analysis_extended_{csv_filename}.xlsx', output.getvalue())) 
 
-
-
-        # ==== Construction recap selon consignes ====
-        # Nom fichier
-        # nom_fichier = f'cfm_analysis_extended_{csv_file_raspi.name.split(".")[0]}'
-
-        # # Moyenne CO2 = B2 (ligne 1, col 0)
-        # co2_mean = df_GM_stats.iloc[0,0]
-        # co2_max = df_GM_stats.iloc[3,0]   # B5 (ligne 4, col 1)
-        # dp1 = df_p.iloc[31,1]             # C33 (ligne 32, col 2)
-        # debit_vol_GR = df_Vdot_stats.iloc[0,1]  # C2 (ligne 1, col 2)
-
-        # recap_rows.append({
-        #     "File name": nom_fichier,
-        #     "CO2 Mean": co2_mean,
-        #     "CO2 Max": co2_max,
-        #     "dp1": dp1,
-        #     "Vdot GR Mean": debit_vol_GR
-        # })
+        dict_summary = {**{"filename" : csv_filename}, **df_p_ext["p_mean/mbar"].to_dict()} 
+        # print(df_p_ext["m_dot_s_calc","m_dot/kg/h"])
+        dict_summary["m_dot_s_calc"] = df_p_ext.loc["m_dot_s_calc","m_dot/kg/h"]
+        recap_rows.append(dict_summary)
 
 
 # csv_file_raspi = st.file_uploader("Import raw data (.csv-export file from RaPi)", key="upload_raspi")
@@ -226,12 +219,20 @@ if extended_files:
 # 2) Fichier récapitulatif unique
 if recap_rows:
     df_recap = pd.DataFrame(recap_rows)
+    # sort
+    df_recap['sort'] = df_recap['filename'].str.replace('(\D+)', '') 
+    df_recap = df_recap.sort_values('sort')    
+    df_recap = df_recap.drop('sort', axis=1)
+    df_recap = df_recap.transpose()
+    df_recap.columns = df_recap.loc['filename']
+    df_recap = df_recap.drop(['filename'])
+    
     recap_output = BytesIO()
-    df_recap.to_excel(recap_output, index=False, sheet_name="Récapitulatif")
+    df_recap.to_excel(recap_output, index=True, header=True, sheet_name="summary")
     
     st.download_button(
-        label="⬇ Download the global recap file",
+        label="⬇ Download the summary file",
         data=recap_output.getvalue(),
-        file_name="recapitulatif_global.xlsx",
+        file_name="summary.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
